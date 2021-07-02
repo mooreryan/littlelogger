@@ -1,5 +1,8 @@
 # littlelogger
 
+[![R-CMD-check](https://github.com/mooreryan/littlelogger/workflows/R-CMD-check/badge.svg)](https://github.com/mooreryan/littlelogger/actions)
+
+
 A little logging library for R scripts.
 
 ## Installation
