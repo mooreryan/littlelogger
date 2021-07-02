@@ -2,12 +2,11 @@
 
 [![R-CMD-check](https://github.com/mooreryan/littlelogger/workflows/R-CMD-check/badge.svg)](https://github.com/mooreryan/littlelogger/actions) [![codecov](https://codecov.io/gh/mooreryan/littlelogger/branch/main/graph/badge.svg?token=RSGYTC86IK)](https://codecov.io/gh/mooreryan/littlelogger)
 
-
 A little logging library for R scripts.
 
 ## Installation
 
-You need [remotes](https://github.com/r-lib/remotes) to install `littlelogger`.
+You need [remotes](https://github.com/r-lib/remotes) to install `littlelogger`.  Once it is installed, run the following in the R console.
 
 ``` r
 remotes::install_github("mooreryan/littlelogger")
@@ -15,7 +14,7 @@ remotes::install_github("mooreryan/littlelogger")
 
 ## Usage
 
-Make a logger, then log something!
+Make a logger with `make_logger`, then log something!
 
 ``` r
 library(littlelogger)

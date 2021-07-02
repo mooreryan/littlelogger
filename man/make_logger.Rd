@@ -16,13 +16,13 @@ messages.}
 \value{
 A new Logger with specified log_level and the following functions:
 \itemize{
-\item abort
-\item unknown
-\item fatal
-\item error
-\item warn
-\item info
-\item debug
+\item abort: Aborts the script and logs a FATAL message.
+\item unknown: Logs an UNKNOWN message when \code{log_level >= 1}.
+\item fatal: Logs an FATAL message when \code{log_level >= 1}.
+\item error: Logs an ERROR message when \code{log_level >= 1}.
+\item warn: Logs an WARN message when \code{log_level >= 2}.
+\item info: Logs an INFO message when \code{log_level >= 2}.
+\item debug: Logs an DEBUG message when \code{log_level = 3}.
 }
 }
 \description{
