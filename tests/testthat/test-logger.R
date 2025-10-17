@@ -35,6 +35,40 @@ test_that("bad log_levels give errors", {
   expect_error(make_logger(""), regexp = "log_level must be one of")
 })
 
+test_that("log_level = 'trace' prints trace messages and above", {
+  logger <- make_logger(log_level = "trace")
+
+  ## Checking levels
+  expect_equal(
+    redact_capture(logger$unknown("hi %s %d", "bob", 123)),
+    "U, [DATE TIME PID] UNKNOWN -- hi bob 123"
+  )
+  expect_equal(
+    redact_capture(logger$fatal("hi %s %d", "bob", 123)),
+    "F, [DATE TIME PID] FATAL -- hi bob 123"
+  )
+  expect_equal(
+    redact_capture(logger$error("hi %s %d", "bob", 123)),
+    "E, [DATE TIME PID] ERROR -- hi bob 123"
+  )
+  expect_equal(
+    redact_capture(logger$warning("hi %s %d", "bob", 123)),
+    "W, [DATE TIME PID] WARNING -- hi bob 123"
+  )
+  expect_equal(
+    redact_capture(logger$info("hi %s %d", "bob", 123)),
+    "I, [DATE TIME PID] INFO -- hi bob 123"
+  )
+  expect_equal(
+    redact_capture(logger$debug("hi %s %d", "bob", 123)),
+    "D, [DATE TIME PID] DEBUG -- hi bob 123"
+  )
+  expect_equal(
+    redact_capture(logger$trace("hi %s %d", "bob", 123)),
+    "T, [DATE TIME PID] TRACE -- hi bob 123"
+  )
+})
+
 test_that("log_level = 'debug' prints debug messages and above", {
   logger <- make_logger(log_level = "debug")
 
@@ -62,6 +96,10 @@ test_that("log_level = 'debug' prints debug messages and above", {
   expect_equal(
     redact_capture(logger$debug("hi %s %d", "bob", 123)),
     "D, [DATE TIME PID] DEBUG -- hi bob 123"
+  )
+  expect_equal(
+    redact_capture(logger$trace("hi %s %d", "bob", 123)),
+    "nothing"
   )
 })
 
@@ -91,6 +129,10 @@ test_that("log_level = 'info' prints info messages and above", {
   )
   expect_equal(
     redact_capture(logger$debug("hi %s %d", "bob", 123)),
+    "nothing"
+  )
+  expect_equal(
+    redact_capture(logger$trace("hi %s %d", "bob", 123)),
     "nothing"
   )
 })
@@ -123,6 +165,10 @@ test_that("log_level = 'error' prints error messages and above", {
     redact_capture(logger$debug("hi %s %d", "bob", 123)),
     "nothing"
   )
+  expect_equal(
+    redact_capture(logger$trace("hi %s %d", "bob", 123)),
+    "nothing"
+  )
 })
 
 test_that("log_level = 'warning' prints warning messages and above", {
@@ -150,6 +196,10 @@ test_that("log_level = 'warning' prints warning messages and above", {
   )
   expect_equal(
     redact_capture(logger$debug("hi %s %d", "bob", 123)),
+    "nothing"
+  )
+  expect_equal(
+    redact_capture(logger$trace("hi %s %d", "bob", 123)),
     "nothing"
   )
 })
@@ -181,6 +231,10 @@ test_that("log_level = 'fatal' prints only fatal messages and above", {
     redact_capture(logger$debug("hi %s %d", "bob", 123)),
     "nothing"
   )
+  expect_equal(
+    redact_capture(logger$trace("hi %s %d", "bob", 123)),
+    "nothing"
+  )
 })
 
 test_that("log_level = 'unknown' prints only unknown messages", {
@@ -208,6 +262,10 @@ test_that("log_level = 'unknown' prints only unknown messages", {
   )
   expect_equal(
     redact_capture(logger$debug("hi %s %d", "bob", 123)),
+    "nothing"
+  )
+  expect_equal(
+    redact_capture(logger$trace("hi %s %d", "bob", 123)),
     "nothing"
   )
 })

@@ -11,7 +11,7 @@
 #'   messages. More permissive levels print less important messages.
 #'
 #'   The log levels in order from most restrictive to most verbose are:
-#'   "unknown", "fatal", "error", "warning", "info", and "debug".
+#'   "unknown", "fatal", "error", "warning", "info", "debug", and "trace".
 #'
 #'   The return value is a list with logging and abort functions.  The
 #'   logging functions each take the same arguments as
@@ -34,6 +34,7 @@
 #' logger$warning("Will print? %s", "no")
 #' logger$info("Will print? %s", "no")
 #' logger$debug("Will print? %s", "no")
+#' logger$trace("Will print? %s", "no")
 #'
 #' ## log_level = "info" prints most of the messages
 #' logger <- make_logger(log_level = "info")
@@ -43,8 +44,9 @@
 #' logger$warning("Will print? %s", "yes")
 #' logger$info("Will print? %s", "yes")
 #' logger$debug("Will print? %s", "no")
+#' logger$trace("Will print? %s", "no")
 #'
-#' ## log_level = "debug" prints all messages
+#' ## log_level = "trace" prints all messages
 #' logger <- make_logger(log_level = "debug")
 #' logger$unknown("Will print? %s", "yes")
 #' logger$fatal("Will print? %s", "yes")
@@ -52,6 +54,7 @@
 #' logger$warning("Will print? %s", "yes")
 #' logger$info("Will print? %s", "yes")
 #' logger$debug("Will print? %s", "yes")
+#' logger$trace("Will print? %s", "yes")
 #'
 #' ## You can abort a script with a nice message like this:
 #' \dontrun{
@@ -63,7 +66,8 @@
 #'   "unknown" prints only UNKNOWN messages. "fatal" prints UNKNOWN and FATAL
 #'   messages. "error" prints UNKNOWN, FATAL, and ERROR messages. "warning" prints
 #'   UNKNOWN, FATAL, ERROR, and WARNING messages. "info" prints UNKNOWN, FATAL,
-#'   ERROR, WARNING, and INFO messages. "debug" prints all messages.
+#'   ERROR, WARNING, and INFO messages. "debug" prints UNKNOWN, FATAL,
+#'   ERROR, WARNING, INFO, and DEBUG messages. "trace" prints all messages.
 #'
 #' @param log_file The filename or connection object to which the log messages
 #'   should be directed. The default value of \code{NULL} prints messages to the
@@ -82,17 +86,21 @@
 #' \item warning: Logs a WARNING message when \code{log_level} is "warning" or more verbose.
 #' \item info: Logs an INFO message when \code{log_level} is "info" or more verbose.
 #' \item debug: Logs a DEBUG message when \code{log_level} is "debug".
+#' \item trace: Logs a TRACE message when \code{log_level} is "trace".
 #' }
 #'
 #' @export
 #'
 make_logger <- function(log_level = "debug", log_file = NULL) {
-  # TODO: log_file may be a file or connection. See cat for details. You may
-  # want to pass in a connection directly, that is managed at the top level of
-  # your program. If you don't then every call to the logger will open and close
-  # a connection, which may impact performance.
-
-  valid_levels <- c("unknown", "fatal", "error", "warning", "info", "debug")
+  valid_levels <- c(
+    "unknown",
+    "fatal",
+    "error",
+    "warning",
+    "info",
+    "debug",
+    "trace"
+  )
 
   if (!(log_level %in% valid_levels)) {
     stop(sprintf(
@@ -101,9 +109,9 @@ make_logger <- function(log_level = "debug", log_file = NULL) {
     ))
   }
 
-  ## Convert log level name to integer for comparison.
-  ## Lower numbers are more restrictive (fewer messages).
-  ## Higher numbers are more verbose (more messages).
+  # Convert log level name to integer for comparison.
+  # Lower numbers are more restrictive (fewer messages).
+  # Higher numbers are more verbose (more messages).
   log_level_name_to_int <- function(level_name) {
     switch(
       level_name,
@@ -113,12 +121,13 @@ make_logger <- function(log_level = "debug", log_file = NULL) {
       "warning" = 4,
       "info" = 5,
       "debug" = 6,
-      1 # default
+      "trace" = 7,
+      1 # else
     )
   }
 
-  ## Convert message type to its severity level.
-  ## Messages are printed if their severity is <= the configured log level.
+  # Convert message type to its severity level.
+  # Messages are printed if their severity is <= the configured log level.
   msg_type_to_severity <- function(msg_type) {
     switch(
       msg_type,
@@ -128,19 +137,20 @@ make_logger <- function(log_level = "debug", log_file = NULL) {
       "WARNING" = 4,
       "INFO" = 5,
       "DEBUG" = 6,
-      6 # default
+      "TRACE" = 7,
+      6 # else
     )
   }
 
   # Convert the log_level string to an integer once
   log_level_int <- log_level_name_to_int(log_level)
 
-  ## Expects a valid msg_type.  `msg` can be a format string as it
-  ## is passed to sprintf.`...` can be used to pass sprintf style
-  ## format string opts.
+  # Expects a valid msg_type.  `msg` can be a format string as it
+  # is passed to sprintf. `...` can be used to pass sprintf style
+  # format string opts.
   make_log_msg <- function(msg_type, msg, ...) {
-    ## Messages look like this:
-    ## E, [2019-06-20 18:21:28.150640 #18632] ERROR -- Hi error
+    # Messages look like this:
+    # E, [2019-06-20 18:21:28.150640 #18632] ERROR -- Hi error
     now <- strftime(Sys.time(), format = "%Y-%m-%d %H:%M:%OS6")
     pid <- Sys.getpid()
     msg_code <- substr(msg_type, start = 1, stop = 1)
@@ -158,8 +168,8 @@ make_logger <- function(log_level = "debug", log_file = NULL) {
     )
   }
 
-  ## If msg_type is not one of the recognized options, it silently does
-  ## nothing.  So don't use it out of context.
+  # If msg_type is not one of the recognized options, it silently does
+  # nothing.  So don't use it out of context.
   log_msg_default <- function(msg_type, msg, ...) {
     if (msg_type_to_severity(msg_type) <= log_level_int) {
       msg <- make_log_msg(msg_type, msg, ...)
@@ -174,7 +184,6 @@ make_logger <- function(log_level = "debug", log_file = NULL) {
       withCallingHandlers(
         message(msg),
         message = function(m) {
-          # TODO: take a connection
           cat(conditionMessage(m), file = log_file, append = TRUE)
           invokeRestart("muffleMessage")
         }
@@ -207,6 +216,9 @@ make_logger <- function(log_level = "debug", log_file = NULL) {
       },
       debug = function(msg, ...) {
         log_msg("DEBUG", msg, ...)
+      },
+      trace = function(msg, ...) {
+        log_msg("TRACE", msg, ...)
       }
     ),
     class = "logger"
