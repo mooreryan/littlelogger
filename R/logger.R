@@ -11,7 +11,7 @@
 #'   messages. More permissive levels print less important messages.
 #'
 #'   The log levels in order from most restrictive to most verbose are:
-#'   "unknown", "fatal", "error", "warn", "info", and "debug".
+#'   "unknown", "fatal", "error", "warning", "info", and "debug".
 #'
 #'   The return value is a list with logging and abort functions.  The
 #'   logging functions each take the same arguments as
@@ -31,7 +31,7 @@
 #' logger$unknown("Will print? %s", "yes")
 #' logger$fatal("Will print? %s", "yes")
 #' logger$error("Will print? %s", "yes")
-#' logger$warn("Will print? %s", "no")
+#' logger$warning("Will print? %s", "no")
 #' logger$info("Will print? %s", "no")
 #' logger$debug("Will print? %s", "no")
 #'
@@ -40,7 +40,7 @@
 #' logger$unknown("Will print? %s", "yes")
 #' logger$fatal("Will print? %s", "yes")
 #' logger$error("Will print? %s", "yes")
-#' logger$warn("Will print? %s", "yes")
+#' logger$warning("Will print? %s", "yes")
 #' logger$info("Will print? %s", "yes")
 #' logger$debug("Will print? %s", "no")
 #'
@@ -49,7 +49,7 @@
 #' logger$unknown("Will print? %s", "yes")
 #' logger$fatal("Will print? %s", "yes")
 #' logger$error("Will print? %s", "yes")
-#' logger$warn("Will print? %s", "yes")
+#' logger$warning("Will print? %s", "yes")
 #' logger$info("Will print? %s", "yes")
 #' logger$debug("Will print? %s", "yes")
 #'
@@ -59,11 +59,11 @@
 #' }
 #'
 #' @param log_level The logging level of this logger.  Valid values
-#'   are "unknown", "fatal", "error", "warn", "info", and "debug".
+#'   are "unknown", "fatal", "error", "warning", "info", and "debug".
 #'   "unknown" prints only UNKNOWN messages. "fatal" prints UNKNOWN and FATAL
-#'   messages. "error" prints UNKNOWN, FATAL, and ERROR messages. "warn" prints
-#'   UNKNOWN, FATAL, ERROR, and WARN messages. "info" prints UNKNOWN, FATAL,
-#'   ERROR, WARN, and INFO messages. "debug" prints all messages.
+#'   messages. "error" prints UNKNOWN, FATAL, and ERROR messages. "warning" prints
+#'   UNKNOWN, FATAL, ERROR, and WARNING messages. "info" prints UNKNOWN, FATAL,
+#'   ERROR, WARNING, and INFO messages. "debug" prints all messages.
 #'
 #' @param log_file The filename or connection object to which the log messages
 #'   should be directed. The default value of \code{NULL} prints messages to the
@@ -79,7 +79,7 @@
 #' \item unknown: Logs an UNKNOWN message when \code{log_level} is "unknown" or more verbose.
 #' \item fatal: Logs a FATAL message when \code{log_level} is "fatal" or more verbose.
 #' \item error: Logs an ERROR message when \code{log_level} is "error" or more verbose.
-#' \item warn: Logs a WARN message when \code{log_level} is "warn" or more verbose.
+#' \item warning: Logs a WARNING message when \code{log_level} is "warning" or more verbose.
 #' \item info: Logs an INFO message when \code{log_level} is "info" or more verbose.
 #' \item debug: Logs a DEBUG message when \code{log_level} is "debug".
 #' }
@@ -92,7 +92,7 @@ make_logger <- function(log_level = "debug", log_file = NULL) {
   # your program. If you don't then every call to the logger will open and close
   # a connection, which may impact performance.
 
-  valid_levels <- c("unknown", "fatal", "error", "warn", "info", "debug")
+  valid_levels <- c("unknown", "fatal", "error", "warning", "info", "debug")
 
   if (!(log_level %in% valid_levels)) {
     stop(sprintf(
@@ -110,7 +110,7 @@ make_logger <- function(log_level = "debug", log_file = NULL) {
       "unknown" = 1,
       "fatal" = 2,
       "error" = 3,
-      "warn" = 4,
+      "warning" = 4,
       "info" = 5,
       "debug" = 6,
       1 # default
@@ -125,7 +125,7 @@ make_logger <- function(log_level = "debug", log_file = NULL) {
       "UNKNOWN" = 1,
       "FATAL" = 2,
       "ERROR" = 3,
-      "WARN" = 4,
+      "WARNING" = 4,
       "INFO" = 5,
       "DEBUG" = 6,
       6 # default
@@ -199,8 +199,8 @@ make_logger <- function(log_level = "debug", log_file = NULL) {
       error = function(msg, ...) {
         log_msg("ERROR", msg, ...)
       },
-      warn = function(msg, ...) {
-        log_msg("WARN", msg, ...)
+      warning = function(msg, ...) {
+        log_msg("WARNING", msg, ...)
       },
       info = function(msg, ...) {
         log_msg("INFO", msg, ...)
