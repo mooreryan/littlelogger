@@ -1,12 +1,14 @@
 #' Make a new logger.
 #'
-#' @description Make a new logger that logs to stderr with the given
-#'   \code{log_level}.
+#' @description Make a new logger that logs to stderr or to the provided log
+#' file with the given \code{log_level}.
 #'
-#' @details Logging is to stderr.  You can control which messages get
-#'   printed with the \code{log_level} option.  Lower numbers print
-#'   only high priority messages.  Higher numbers print less important
-#'   messages.
+#' @details By default, log messages are sent to the same location that
+#'   \code{message} is configured to send messages to, which is the
+#'   \code{stderr()} connection unless you have configured your R session
+#'   differently. You can control which messages get printed with the
+#'   \code{log_level} option. Lower numbers print only high priority messages.
+#'   Higher numbers print less important messages.
 #'
 #'   The return value is a list with logging and abort functions.  The
 #'   logging functions each take the same arguments as
@@ -59,6 +61,14 @@
 #'   messages.  3 prints UNKNOWN, FATAL, ERROR, WARN, INFO, and DEBUG
 #'   messages.
 #'
+#' @param log_file The filename or connection object to which the log messages
+#'   should be directed. The default value of \code{NULL} prints messages to the
+#'   same location of R's \code{message} function. If you provide a filename,
+#'   then a new connection will be opened and closed for every logged message.
+#'   If you provide an open connection, then that connection is used for
+#'   writing. If you provide a connection that is closed, it will be opened and
+#'   closed.
+#'
 #' @return A new Logger with specified log_level and the following functions:
 #' \itemize{
 #' \item abort: Aborts the script and logs a FATAL message.
@@ -71,7 +81,13 @@
 #' }
 #'
 #' @export
-make_logger <- function(log_level = 3) {
+#'
+make_logger <- function(log_level = 3, log_file = NULL) {
+  # TODO: log_file may be a file or connection. See cat for details. You may
+  # want to pass in a connection directly, that is managed at the top level of
+  # your program. If you don't then every call to the logger will open and close
+  # a connection, which may impact performance.
+
   if (!(log_level == 1 || log_level == 2 || log_level == 3)) {
     stop("log_level must be 1, 2, or 3")
   }
@@ -111,18 +127,35 @@ make_logger <- function(log_level = 3) {
 
     paste0(
       msg_prefix,
-      sprintf(msg, ...))
+      sprintf(msg, ...)
+    )
   }
-
 
   ## If msg_type is not one of the recognized options, it silently does
   ## nothing.  So don't use it out of context.
-  log_msg <- function(msg_type, msg, ...) {
+  log_msg_default <- function(msg_type, msg, ...) {
     if (log_level_to_int(msg_type) <= log_level) {
       msg <- make_log_msg(msg_type, msg, ...)
       message(msg)
     }
   }
+
+  log_msg_to_file <- function(msg_type, msg, ...) {
+    if (log_level_to_int(msg_type) <= log_level) {
+      msg <- make_log_msg(msg_type, msg, ...)
+
+      withCallingHandlers(
+        message(msg),
+        message = function(m) {
+          # TODO: take a connection
+          cat(conditionMessage(m), file = log_file, append = TRUE)
+          invokeRestart("muffleMessage")
+        }
+      )
+    }
+  }
+
+  log_msg <- ifelse(is.null(log_file), log_msg_default, log_msg_to_file)
 
   structure(
     list(

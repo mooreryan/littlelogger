@@ -5,18 +5,20 @@ redact <- function(msg) {
   if (length(msg) == 0) {
     "nothing"
   } else {
-    m <- sub(pattern = "[0-9]{4}-[0-9]{2}-[0-9]{2}",
-             replacement = "DATE",
-             x = msg,
-             perl = TRUE)
+    m <- sub(
+      pattern = "[0-9]{4}-[0-9]{2}-[0-9]{2}",
+      replacement = "DATE",
+      x = msg,
+      perl = TRUE
+    )
 
-    m <- sub(pattern = "[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}",
-             replacement = "TIME",
-             x = m)
+    m <- sub(
+      pattern = "[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}",
+      replacement = "TIME",
+      x = m
+    )
 
-    m <- sub(pattern = "#[0-9]+",
-             replacement = "PID",
-             x = m)
+    m <- sub(pattern = "#[0-9]+", replacement = "PID", x = m)
 
     m
   }
@@ -114,11 +116,69 @@ test_that("log_level = 1 prints important messages", {
     "nothing"
   )
   expect_equal(
-    redact_capture(logger$info("hi %s %d", "bob", 123)) ,
+    redact_capture(logger$info("hi %s %d", "bob", 123)),
     "nothing"
   )
   expect_equal(
     redact_capture(logger$debug("hi %s %d", "bob", 123)),
     "nothing"
   )
+})
+
+describe("sending log messages to a file", {
+  it("allows redirecting log messages to a named file", {
+    log_file <- tempfile()
+    logger <- make_logger(log_level = 3, log_file = log_file)
+
+    logger$info("Hello, %s!", "World")
+
+    result <- readLines(log_file) |> redact()
+
+    expect_equal(result, "I, [DATE TIME PID] INFO -- Hello, World!")
+  })
+
+  it("allows redirecting log messages when given a connection", {
+    log_file_name <- tempfile()
+    connection <- file(
+      description = log_file_name,
+      open = "at",
+      blocking = TRUE
+    )
+    on.exit(close(connection))
+
+    logger <- make_logger(log_level = 3, log_file = connection)
+
+    logger$info("Hello, %s!", "World")
+
+    result <- readLines(log_file_name) |> redact()
+
+    expect_equal(result, "I, [DATE TIME PID] INFO -- Hello, World!")
+  })
+})
+
+describe("different loggers are independent", {
+  it("doesn't interfere with any other logger", {
+    default_logger <- make_logger()
+    log_file_name <- tempfile()
+    file_logger <- make_logger(log_file = log_file_name)
+
+    file_logger$error("1")
+
+    expect_equal(
+      redact_capture(default_logger$error("hi")),
+      "E, [DATE TIME PID] ERROR -- hi"
+    )
+
+    file_logger$info("2")
+
+    result <- readLines(log_file_name) |> redact()
+
+    expect_equal(
+      result,
+      c(
+        "E, [DATE TIME PID] ERROR -- 1",
+        "I, [DATE TIME PID] INFO -- 2"
+      )
+    )
+  })
 })
