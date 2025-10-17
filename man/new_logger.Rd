@@ -4,7 +4,7 @@
 \alias{new_logger}
 \title{Make a new logger.}
 \usage{
-new_logger(log_level = "info", log_file = NULL)
+new_logger(log_level = "info", file = NULL)
 }
 \arguments{
 \item{log_level}{The logging level of this logger.  Valid values
@@ -15,7 +15,7 @@ prints UNKNOWN, FATAL, ERROR, and WARNING messages. "info" prints UNKNOWN,
 FATAL, ERROR, WARNING, and INFO messages. "debug" prints UNKNOWN, FATAL,
 ERROR, WARNING, INFO, and DEBUG messages. "trace" prints all messages.}
 
-\item{log_file}{The filename or connection object to which the log messages
+\item{file}{The filename or connection object to which the log messages
 should be directed. The default value of \code{NULL} prints messages to the
 same location of R's \code{message} function. If you provide a filename,
 then a new connection will be opened and closed for every logged message.

@@ -62,7 +62,7 @@
 #'   FATAL, ERROR, WARNING, and INFO messages. "debug" prints UNKNOWN, FATAL,
 #'   ERROR, WARNING, INFO, and DEBUG messages. "trace" prints all messages.
 #'
-#' @param log_file The filename or connection object to which the log messages
+#' @param file The filename or connection object to which the log messages
 #'   should be directed. The default value of \code{NULL} prints messages to the
 #'   same location of R's \code{message} function. If you provide a filename,
 #'   then a new connection will be opened and closed for every logged message.
@@ -85,7 +85,7 @@
 #'
 #' @export
 #'
-new_logger <- function(log_level = "info", log_file = NULL) {
+new_logger <- function(log_level = "info", file = NULL) {
   valid_levels <- c(
     "unknown",
     "fatal",
@@ -165,14 +165,14 @@ new_logger <- function(log_level = "info", log_file = NULL) {
       withCallingHandlers(
         message(msg),
         message = function(m) {
-          cat(conditionMessage(m), file = log_file, append = TRUE)
+          cat(conditionMessage(m), file = file, append = TRUE)
           invokeRestart("muffleMessage")
         }
       )
     }
   }
 
-  log_msg <- if (is.null(log_file)) {
+  log_msg <- if (is.null(file)) {
     log_msg_default
   } else {
     log_msg_to_file

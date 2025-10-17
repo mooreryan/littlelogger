@@ -26,4 +26,7 @@ logger$info("I'm %s and I'm %d years old.", "Elrond", 3000)
 #       ^ Date     ^ Time          ^ PID   ^ Level ^ Message
 ```
 
+- You can create many instances of the logger and they will not interfere with each other.
+- You can log to files by specifying the `file` argument
+
 For more examples, see the `?littlelogger::new_logger` help page or the unit tests in `tests/testthat/test-logger.R`.

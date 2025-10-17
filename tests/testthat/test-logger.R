@@ -273,7 +273,7 @@ test_that("log_level = 'unknown' prints only unknown messages", {
 describe("sending log messages to a file", {
   it("allows redirecting log messages to a named file", {
     log_file <- tempfile()
-    logger <- new_logger(log_level = "debug", log_file = log_file)
+    logger <- new_logger(log_level = "debug", file = log_file)
 
     logger$info("Hello, %s!", "World")
 
@@ -291,7 +291,7 @@ describe("sending log messages to a file", {
     )
     on.exit(close(connection))
 
-    logger <- new_logger(log_level = "debug", log_file = connection)
+    logger <- new_logger(log_level = "debug", file = connection)
 
     logger$info("Hello, %s!", "World")
 
@@ -305,7 +305,7 @@ describe("different loggers are independent", {
   it("doesn't interfere with any other logger", {
     default_logger <- new_logger()
     log_file_name <- tempfile()
-    file_logger <- new_logger(log_file = log_file_name)
+    file_logger <- new_logger(file = log_file_name)
 
     file_logger$error("1")
 
