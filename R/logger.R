@@ -221,6 +221,6 @@ make_logger <- function(log_level = "info", log_file = NULL) {
         log_msg("TRACE", msg, ...)
       }
     ),
-    class = "logger"
+    class = "littlelogger"
   )
 }
