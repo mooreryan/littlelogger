@@ -29,14 +29,14 @@ redact_capture <- function(x) {
 }
 
 test_that("bad log_levels give errors", {
-  expect_error(make_logger(0), regexp = "log_level must be 1, 2, or 3")
-  expect_error(make_logger(-1), regexp = "log_level must be 1, 2, or 3")
-  expect_error(make_logger(4), regexp = "log_level must be 1, 2, or 3")
-  expect_error(make_logger("asth"), regexp = "log_level must be 1, 2, or 3")
+  expect_error(make_logger("invalid"), regexp = "log_level must be one of")
+  expect_error(make_logger(0), regexp = "log_level must be one of")
+  expect_error(make_logger(1), regexp = "log_level must be one of")
+  expect_error(make_logger(""), regexp = "log_level must be one of")
 })
 
-test_that("log_level = 3 prints all messages", {
-  logger <- make_logger(log_level = 3)
+test_that("log_level = 'debug' prints all messages", {
+  logger <- make_logger(log_level = "debug")
 
   ## Checking levels
   expect_equal(
@@ -65,8 +65,8 @@ test_that("log_level = 3 prints all messages", {
   )
 })
 
-test_that("log_level = 2 prints some messages", {
-  logger <- make_logger(log_level = 2)
+test_that("log_level = 'info' prints some messages", {
+  logger <- make_logger(log_level = "info")
 
   ## Checking levels
   expect_equal(
@@ -95,8 +95,8 @@ test_that("log_level = 2 prints some messages", {
   )
 })
 
-test_that("log_level = 1 prints important messages", {
-  logger <- make_logger(log_level = 1)
+test_that("log_level = 'error' prints important messages", {
+  logger <- make_logger(log_level = "error")
 
   ## Checking levels
   expect_equal(
@@ -125,10 +125,97 @@ test_that("log_level = 1 prints important messages", {
   )
 })
 
+test_that("log_level = 'warn' prints warn and above", {
+  logger <- make_logger(log_level = "warn")
+
+  expect_equal(
+    redact_capture(logger$unknown("hi %s %d", "bob", 123)),
+    "U, [DATE TIME PID] UNKNOWN -- hi bob 123"
+  )
+  expect_equal(
+    redact_capture(logger$fatal("hi %s %d", "bob", 123)),
+    "F, [DATE TIME PID] FATAL -- hi bob 123"
+  )
+  expect_equal(
+    redact_capture(logger$error("hi %s %d", "bob", 123)),
+    "E, [DATE TIME PID] ERROR -- hi bob 123"
+  )
+  expect_equal(
+    redact_capture(logger$warn("hi %s %d", "bob", 123)),
+    "W, [DATE TIME PID] WARN -- hi bob 123"
+  )
+  expect_equal(
+    redact_capture(logger$info("hi %s %d", "bob", 123)),
+    "nothing"
+  )
+  expect_equal(
+    redact_capture(logger$debug("hi %s %d", "bob", 123)),
+    "nothing"
+  )
+})
+
+test_that("log_level = 'fatal' prints only fatal and unknown", {
+  logger <- make_logger(log_level = "fatal")
+
+  expect_equal(
+    redact_capture(logger$unknown("hi %s %d", "bob", 123)),
+    "U, [DATE TIME PID] UNKNOWN -- hi bob 123"
+  )
+  expect_equal(
+    redact_capture(logger$fatal("hi %s %d", "bob", 123)),
+    "F, [DATE TIME PID] FATAL -- hi bob 123"
+  )
+  expect_equal(
+    redact_capture(logger$error("hi %s %d", "bob", 123)),
+    "nothing"
+  )
+  expect_equal(
+    redact_capture(logger$warn("hi %s %d", "bob", 123)),
+    "nothing"
+  )
+  expect_equal(
+    redact_capture(logger$info("hi %s %d", "bob", 123)),
+    "nothing"
+  )
+  expect_equal(
+    redact_capture(logger$debug("hi %s %d", "bob", 123)),
+    "nothing"
+  )
+})
+
+test_that("log_level = 'unknown' prints only unknown", {
+  logger <- make_logger(log_level = "unknown")
+
+  expect_equal(
+    redact_capture(logger$unknown("hi %s %d", "bob", 123)),
+    "U, [DATE TIME PID] UNKNOWN -- hi bob 123"
+  )
+  expect_equal(
+    redact_capture(logger$fatal("hi %s %d", "bob", 123)),
+    "nothing"
+  )
+  expect_equal(
+    redact_capture(logger$error("hi %s %d", "bob", 123)),
+    "nothing"
+  )
+  expect_equal(
+    redact_capture(logger$warn("hi %s %d", "bob", 123)),
+    "nothing"
+  )
+  expect_equal(
+    redact_capture(logger$info("hi %s %d", "bob", 123)),
+    "nothing"
+  )
+  expect_equal(
+    redact_capture(logger$debug("hi %s %d", "bob", 123)),
+    "nothing"
+  )
+})
+
 describe("sending log messages to a file", {
   it("allows redirecting log messages to a named file", {
     log_file <- tempfile()
-    logger <- make_logger(log_level = 3, log_file = log_file)
+    logger <- make_logger(log_level = "debug", log_file = log_file)
 
     logger$info("Hello, %s!", "World")
 
@@ -146,7 +233,7 @@ describe("sending log messages to a file", {
     )
     on.exit(close(connection))
 
-    logger <- make_logger(log_level = 3, log_file = connection)
+    logger <- make_logger(log_level = "debug", log_file = connection)
 
     logger$info("Hello, %s!", "World")
 
