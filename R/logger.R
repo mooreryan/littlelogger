@@ -91,7 +91,7 @@
 #'
 #' @export
 #'
-make_logger <- function(log_level = "debug", log_file = NULL) {
+make_logger <- function(log_level = "info", log_file = NULL) {
   valid_levels <- c(
     "unknown",
     "fatal",
