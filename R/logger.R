@@ -15,18 +15,16 @@
 #'
 #'   The return value is a structure with class of "littlelogger" of logging
 #'   functions.  The logging functions each take the same arguments as
-#'   \code{\link[base]{sprintf}}.  The \code{abort} function takes
-#'   those arguments plus a \code{status} argument that defaults to 1
-#'   and specifies the exit code of your script.
+#'   \code{\link[base]{sprintf}}.
 #'
 #' @examples
-#' ## The logger prints some useful info.  It's based on Ruby's logger.
+#' # The logger prints some useful info.  It's based on Ruby's logger.
 #' logger <- make_logger()
 #' logger$info("I'm %s and I'm %d years old.", "Elrond", 3000)
 #' #=> I, [2021-07-01 18:43:33.937682 #52832] INFO -- I'm Elrond and I'm 3000 years old.
 #' #       ^ Date     ^ Time          ^ PID   ^ Level ^ Message
 #'
-#' ## log_level = "error" only prints the most important messages.
+#' # log_level = "error" only prints the most important messages.
 #' logger <- make_logger(log_level = "error")
 #' logger$unknown("Will print? %s", "yes")
 #' logger$fatal("Will print? %s", "yes")
@@ -36,7 +34,7 @@
 #' logger$debug("Will print? %s", "no")
 #' logger$trace("Will print? %s", "no")
 #'
-#' ## log_level = "info" prints most of the messages
+#' # log_level = "info" prints most of the messages
 #' logger <- make_logger(log_level = "info")
 #' logger$unknown("Will print? %s", "yes")
 #' logger$fatal("Will print? %s", "yes")
@@ -46,8 +44,8 @@
 #' logger$debug("Will print? %s", "no")
 #' logger$trace("Will print? %s", "no")
 #'
-#' ## log_level = "trace" prints all messages
-#' logger <- make_logger(log_level = "debug")
+#' # log_level = "trace" prints all messages
+#' logger <- make_logger(log_level = "trace")
 #' logger$unknown("Will print? %s", "yes")
 #' logger$fatal("Will print? %s", "yes")
 #' logger$error("Will print? %s", "yes")
@@ -59,9 +57,9 @@
 #' @param log_level The logging level of this logger.  Valid values
 #'   are "unknown", "fatal", "error", "warning", "info", and "debug".
 #'   "unknown" prints only UNKNOWN messages. "fatal" prints UNKNOWN and FATAL
-#'   messages. "error" prints UNKNOWN, FATAL, and ERROR messages. "warning" prints
-#'   UNKNOWN, FATAL, ERROR, and WARNING messages. "info" prints UNKNOWN, FATAL,
-#'   ERROR, WARNING, and INFO messages. "debug" prints UNKNOWN, FATAL,
+#'   messages. "error" prints UNKNOWN, FATAL, and ERROR messages. "warning"
+#'   prints UNKNOWN, FATAL, ERROR, and WARNING messages. "info" prints UNKNOWN,
+#'   FATAL, ERROR, WARNING, and INFO messages. "debug" prints UNKNOWN, FATAL,
 #'   ERROR, WARNING, INFO, and DEBUG messages. "trace" prints all messages.
 #'
 #' @param log_file The filename or connection object to which the log messages
@@ -70,11 +68,12 @@
 #'   then a new connection will be opened and closed for every logged message.
 #'   If you provide an open connection, then that connection is used for
 #'   writing. If you provide a connection that is closed, it will be opened and
-#'   closed.
+#'   closed. (Currently, this is the behavior of `cat`, since that is what is
+#'   used to write messages to the connection. Check out that documentation for
+#'   more info.)
 #'
 #' @return A new Logger with specified log_level and the following functions:
 #' \itemize{
-#' \item abort: Aborts the script and logs a FATAL message.
 #' \item unknown: Logs an UNKNOWN message when \code{log_level} is "unknown" or more verbose.
 #' \item fatal: Logs a FATAL message when \code{log_level} is "fatal" or more verbose.
 #' \item error: Logs an ERROR message when \code{log_level} is "error" or more verbose.
@@ -99,7 +98,7 @@ make_logger <- function(log_level = "info", log_file = NULL) {
 
   if (!(log_level %in% valid_levels)) {
     stop(sprintf(
-      'log_level must be one of: %s',
+      "log_level must be one of: %s",
       paste(shQuote(valid_levels), collapse = ", ")
     ))
   }
@@ -107,74 +106,61 @@ make_logger <- function(log_level = "info", log_file = NULL) {
   # Convert log level name to integer for comparison.
   # Lower numbers are more restrictive (fewer messages).
   # Higher numbers are more verbose (more messages).
-  log_level_name_to_int <- function(level_name) {
+  log_level_to_int <- function(level_name) {
     switch(
       level_name,
       "unknown" = 1,
+      "UNKNOWN" = 1,
       "fatal" = 2,
+      "FATAL" = 2,
       "error" = 3,
+      "ERROR" = 3,
       "warning" = 4,
+      "WARNING" = 4,
       "info" = 5,
+      "INFO" = 5,
       "debug" = 6,
+      "DEBUG" = 6,
       "trace" = 7,
+      "TRACE" = 7,
       1 # else
     )
   }
 
-  # Convert message type to its severity level.
-  # Messages are printed if their severity is <= the configured log level.
-  msg_type_to_severity <- function(msg_type) {
-    switch(
-      msg_type,
-      "UNKNOWN" = 1,
-      "FATAL" = 2,
-      "ERROR" = 3,
-      "WARNING" = 4,
-      "INFO" = 5,
-      "DEBUG" = 6,
-      "TRACE" = 7,
-      6 # else
-    )
-  }
-
-  # Convert the log_level string to an integer once
-  log_level_int <- log_level_name_to_int(log_level)
-
-  # Expects a valid msg_type.  `msg` can be a format string as it
+  # Expects an all caps log_level name.  `msg` can be a format string as it
   # is passed to sprintf. `...` can be used to pass sprintf style
   # format string opts.
-  make_log_msg <- function(msg_type, msg, ...) {
+  make_log_msg <- function(log_level, msg, ...) {
     # Messages look like this:
     # E, [2019-06-20 18:21:28.150640 #18632] ERROR -- Hi error
     now <- strftime(Sys.time(), format = "%Y-%m-%d %H:%M:%OS6")
     pid <- Sys.getpid()
-    msg_code <- substr(msg_type, start = 1, stop = 1)
+    log_level_code <- substr(log_level, start = 1, stop = 1)
     msg_prefix <- sprintf(
       "%s, [%s #%d] %s -- ",
-      msg_code,
+      log_level_code,
       now,
       pid,
-      msg_type
+      log_level
     )
 
-    paste0(
-      msg_prefix,
-      sprintf(msg, ...)
-    )
+    paste0(msg_prefix, sprintf(msg, ...))
   }
 
-  # If msg_type is not one of the recognized options, it silently does
-  # nothing.  So don't use it out of context.
-  log_msg_default <- function(msg_type, msg, ...) {
-    if (msg_type_to_severity(msg_type) <= log_level_int) {
-      msg <- make_log_msg(msg_type, msg, ...)
+  # Convert the log_level string to an integer once and use it in the
+  # comparisons.
+  log_level_int <- log_level_to_int(log_level)
+
+  log_msg_default <- function(log_level, msg, ...) {
+    if (log_level_to_int(log_level) <= log_level_int) {
+      msg <- make_log_msg(log_level, msg, ...)
       message(msg)
     }
   }
 
-  log_msg_to_file <- function(msg_type, msg, ...) {
-    if (msg_type_to_severity(msg_type) <= log_level_int) {
-      msg <- make_log_msg(msg_type, msg, ...)
+  log_msg_to_file <- function(log_level, msg, ...) {
+    if (log_level_to_int(log_level) <= log_level_int) {
+      msg <- make_log_msg(log_level, msg, ...)
 
       withCallingHandlers(
         message(msg),
@@ -186,7 +172,11 @@ make_logger <- function(log_level = "info", log_file = NULL) {
     }
   }
 
-  log_msg <- ifelse(is.null(log_file), log_msg_default, log_msg_to_file)
+  log_msg <- if (is.null(log_file)) {
+    log_msg_default
+  } else {
+    log_msg_to_file
+  }
 
   structure(
     list(

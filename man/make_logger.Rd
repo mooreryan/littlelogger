@@ -4,80 +4,93 @@
 \alias{make_logger}
 \title{Make a new logger.}
 \usage{
-make_logger(log_level = 3)
+make_logger(log_level = "info", log_file = NULL)
 }
 \arguments{
 \item{log_level}{The logging level of this logger.  Valid values
-are 1, 2, and 3.  1 prints only UNKNOWN, FATAL, and ERROR
-messages.  2 prints UNKNOWN, FATAL, ERROR, WARN, and INFO
-messages.  3 prints UNKNOWN, FATAL, ERROR, WARN, INFO, and DEBUG
-messages.}
+are "unknown", "fatal", "error", "warning", "info", and "debug".
+"unknown" prints only UNKNOWN messages. "fatal" prints UNKNOWN and FATAL
+messages. "error" prints UNKNOWN, FATAL, and ERROR messages. "warning"
+prints UNKNOWN, FATAL, ERROR, and WARNING messages. "info" prints UNKNOWN,
+FATAL, ERROR, WARNING, and INFO messages. "debug" prints UNKNOWN, FATAL,
+ERROR, WARNING, INFO, and DEBUG messages. "trace" prints all messages.}
+
+\item{log_file}{The filename or connection object to which the log messages
+should be directed. The default value of \code{NULL} prints messages to the
+same location of R's \code{message} function. If you provide a filename,
+then a new connection will be opened and closed for every logged message.
+If you provide an open connection, then that connection is used for
+writing. If you provide a connection that is closed, it will be opened and
+closed. (Currently, this is the behavior of `cat`, since that is what is
+used to write messages to the connection. Check out that documentation for
+more info.)}
 }
 \value{
 A new Logger with specified log_level and the following functions:
 \itemize{
-\item abort: Aborts the script and logs a FATAL message.
-\item unknown: Logs an UNKNOWN message when \code{log_level >= 1}.
-\item fatal: Logs an FATAL message when \code{log_level >= 1}.
-\item error: Logs an ERROR message when \code{log_level >= 1}.
-\item warn: Logs an WARN message when \code{log_level >= 2}.
-\item info: Logs an INFO message when \code{log_level >= 2}.
-\item debug: Logs an DEBUG message when \code{log_level = 3}.
+\item unknown: Logs an UNKNOWN message when \code{log_level} is "unknown" or more verbose.
+\item fatal: Logs a FATAL message when \code{log_level} is "fatal" or more verbose.
+\item error: Logs an ERROR message when \code{log_level} is "error" or more verbose.
+\item warning: Logs a WARNING message when \code{log_level} is "warning" or more verbose.
+\item info: Logs an INFO message when \code{log_level} is "info" or more verbose.
+\item debug: Logs a DEBUG message when \code{log_level} is "debug".
+\item trace: Logs a TRACE message when \code{log_level} is "trace".
 }
 }
 \description{
-Make a new logger that logs to stderr with the given
-  \code{log_level}.
+Make a new logger that logs to stderr or to the provided log
+file with the given \code{log_level}.
 }
 \details{
-Logging is to stderr.  You can control which messages get
-  printed with the \code{log_level} option.  Lower numbers print
-  only high priority messages.  Higher numbers print less important
-  messages.
+By default, log messages are sent to the same location that
+  \code{message} is configured to send messages to, which is the
+  \code{stderr()} connection unless you have configured your R session
+  differently. You can control which messages get printed with the
+  \code{log_level} option. More restrictive levels print only high priority
+  messages. More permissive levels print less important messages.
 
-  The return value is a list with logging and abort functions.  The
-  logging functions each take the same arguments as
-  \code{\link[base]{sprintf}}.  The \code{abort} function takes
-  those arguments plus a \code{status} argument that defaults to 1
-  and specifies the exit code of your script.
+  The log levels in order from most restrictive to most verbose are:
+  "unknown", "fatal", "error", "warning", "info", "debug", and "trace".
+
+  The return value is a structure with class of "littlelogger" of logging
+  functions.  The logging functions each take the same arguments as
+  \code{\link[base]{sprintf}}.
 }
 \examples{
-## The logger prints some useful info.  It's based on Ruby's logger.
+# The logger prints some useful info.  It's based on Ruby's logger.
 logger <- make_logger()
 logger$info("I'm \%s and I'm \%d years old.", "Elrond", 3000)
 #=> I, [2021-07-01 18:43:33.937682 #52832] INFO -- I'm Elrond and I'm 3000 years old.
 #       ^ Date     ^ Time          ^ PID   ^ Level ^ Message
 
-## log_level = 1 only prints the most important messages.
-logger <- make_logger(log_level = 1)
+# log_level = "error" only prints the most important messages.
+logger <- make_logger(log_level = "error")
 logger$unknown("Will print? \%s", "yes")
 logger$fatal("Will print? \%s", "yes")
 logger$error("Will print? \%s", "yes")
-logger$warn("Will print? \%s", "no")
+logger$warning("Will print? \%s", "no")
 logger$info("Will print? \%s", "no")
 logger$debug("Will print? \%s", "no")
+logger$trace("Will print? \%s", "no")
 
-## log_level = 2 prints most of the messages
-logger <- make_logger(log_level = 2)
+# log_level = "info" prints most of the messages
+logger <- make_logger(log_level = "info")
 logger$unknown("Will print? \%s", "yes")
 logger$fatal("Will print? \%s", "yes")
 logger$error("Will print? \%s", "yes")
-logger$warn("Will print? \%s", "yes")
+logger$warning("Will print? \%s", "yes")
 logger$info("Will print? \%s", "yes")
 logger$debug("Will print? \%s", "no")
+logger$trace("Will print? \%s", "no")
 
-## log_level = 3 prints all messages
-logger <- make_logger(log_level = 3)
+# log_level = "trace" prints all messages
+logger <- make_logger(log_level = "trace")
 logger$unknown("Will print? \%s", "yes")
 logger$fatal("Will print? \%s", "yes")
 logger$error("Will print? \%s", "yes")
-logger$warn("Will print? \%s", "yes")
+logger$warning("Will print? \%s", "yes")
 logger$info("Will print? \%s", "yes")
 logger$debug("Will print? \%s", "yes")
-
-## You can abort a script with a nice message like this:
-\dontrun{
-logger$abort("1 + 1 should be 2.  Got \%d", 3, status = 111)
-}
+logger$trace("Will print? \%s", "yes")
 
 }
