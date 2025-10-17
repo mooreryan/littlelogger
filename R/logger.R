@@ -13,8 +13,8 @@
 #'   The log levels in order from most restrictive to most verbose are:
 #'   "unknown", "fatal", "error", "warning", "info", "debug", and "trace".
 #'
-#'   The return value is a list with logging and abort functions.  The
-#'   logging functions each take the same arguments as
+#'   The return value is a structure with class of "littlelogger" of logging
+#'   functions.  The logging functions each take the same arguments as
 #'   \code{\link[base]{sprintf}}.  The \code{abort} function takes
 #'   those arguments plus a \code{status} argument that defaults to 1
 #'   and specifies the exit code of your script.
@@ -55,11 +55,6 @@
 #' logger$info("Will print? %s", "yes")
 #' logger$debug("Will print? %s", "yes")
 #' logger$trace("Will print? %s", "yes")
-#'
-#' ## You can abort a script with a nice message like this:
-#' \dontrun{
-#' logger$abort("1 + 1 should be 2.  Got %d", 3, status = 111)
-#' }
 #'
 #' @param log_level The logging level of this logger.  Valid values
 #'   are "unknown", "fatal", "error", "warning", "info", and "debug".
@@ -195,10 +190,6 @@ make_logger <- function(log_level = "info", log_file = NULL) {
 
   structure(
     list(
-      abort = function(msg, ..., status = 1) {
-        log_msg("FATAL", msg, ...)
-        quit(save = "no", status = status, runLast = TRUE)
-      },
       unknown = function(msg, ...) {
         log_msg("UNKNOWN", msg, ...)
       },
