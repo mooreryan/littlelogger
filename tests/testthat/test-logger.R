@@ -29,14 +29,14 @@ redact_capture <- function(x) {
 }
 
 test_that("bad log_levels give errors", {
-  expect_error(make_logger("invalid"), regexp = "log_level must be one of")
-  expect_error(make_logger(0), regexp = "log_level must be one of")
-  expect_error(make_logger(1), regexp = "log_level must be one of")
-  expect_error(make_logger(""), regexp = "log_level must be one of")
+  expect_error(new_logger("invalid"), regexp = "log_level must be one of")
+  expect_error(new_logger(0), regexp = "log_level must be one of")
+  expect_error(new_logger(1), regexp = "log_level must be one of")
+  expect_error(new_logger(""), regexp = "log_level must be one of")
 })
 
 test_that("log_level = 'trace' prints trace messages and above", {
-  logger <- make_logger(log_level = "trace")
+  logger <- new_logger(log_level = "trace")
 
   ## Checking levels
   expect_equal(
@@ -70,7 +70,7 @@ test_that("log_level = 'trace' prints trace messages and above", {
 })
 
 test_that("log_level = 'debug' prints debug messages and above", {
-  logger <- make_logger(log_level = "debug")
+  logger <- new_logger(log_level = "debug")
 
   ## Checking levels
   expect_equal(
@@ -104,7 +104,7 @@ test_that("log_level = 'debug' prints debug messages and above", {
 })
 
 test_that("log_level = 'info' prints info messages and above", {
-  logger <- make_logger(log_level = "info")
+  logger <- new_logger(log_level = "info")
 
   ## Checking levels
   expect_equal(
@@ -138,7 +138,7 @@ test_that("log_level = 'info' prints info messages and above", {
 })
 
 test_that("log_level = 'error' prints error messages and above", {
-  logger <- make_logger(log_level = "error")
+  logger <- new_logger(log_level = "error")
 
   ## Checking levels
   expect_equal(
@@ -172,7 +172,7 @@ test_that("log_level = 'error' prints error messages and above", {
 })
 
 test_that("log_level = 'warning' prints warning messages and above", {
-  logger <- make_logger(log_level = "warning")
+  logger <- new_logger(log_level = "warning")
 
   expect_equal(
     redact_capture(logger$unknown("hi %s %d", "bob", 123)),
@@ -205,7 +205,7 @@ test_that("log_level = 'warning' prints warning messages and above", {
 })
 
 test_that("log_level = 'fatal' prints only fatal messages and above", {
-  logger <- make_logger(log_level = "fatal")
+  logger <- new_logger(log_level = "fatal")
 
   expect_equal(
     redact_capture(logger$unknown("hi %s %d", "bob", 123)),
@@ -238,7 +238,7 @@ test_that("log_level = 'fatal' prints only fatal messages and above", {
 })
 
 test_that("log_level = 'unknown' prints only unknown messages", {
-  logger <- make_logger(log_level = "unknown")
+  logger <- new_logger(log_level = "unknown")
 
   expect_equal(
     redact_capture(logger$unknown("hi %s %d", "bob", 123)),
@@ -273,7 +273,7 @@ test_that("log_level = 'unknown' prints only unknown messages", {
 describe("sending log messages to a file", {
   it("allows redirecting log messages to a named file", {
     log_file <- tempfile()
-    logger <- make_logger(log_level = "debug", log_file = log_file)
+    logger <- new_logger(log_level = "debug", log_file = log_file)
 
     logger$info("Hello, %s!", "World")
 
@@ -291,7 +291,7 @@ describe("sending log messages to a file", {
     )
     on.exit(close(connection))
 
-    logger <- make_logger(log_level = "debug", log_file = connection)
+    logger <- new_logger(log_level = "debug", log_file = connection)
 
     logger$info("Hello, %s!", "World")
 
@@ -303,9 +303,9 @@ describe("sending log messages to a file", {
 
 describe("different loggers are independent", {
   it("doesn't interfere with any other logger", {
-    default_logger <- make_logger()
+    default_logger <- new_logger()
     log_file_name <- tempfile()
-    file_logger <- make_logger(log_file = log_file_name)
+    file_logger <- new_logger(log_file = log_file_name)
 
     file_logger$error("1")
 

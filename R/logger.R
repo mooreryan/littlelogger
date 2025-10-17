@@ -19,13 +19,13 @@
 #'
 #' @examples
 #' # The logger prints some useful info.  It's based on Ruby's logger.
-#' logger <- make_logger()
+#' logger <- new_logger()
 #' logger$info("I'm %s and I'm %d years old.", "Elrond", 3000)
 #' #=> I, [2021-07-01 18:43:33.937682 #52832] INFO -- I'm Elrond and I'm 3000 years old.
 #' #       ^ Date     ^ Time          ^ PID   ^ Level ^ Message
 #'
 #' # log_level = "error" only prints the most important messages.
-#' logger <- make_logger(log_level = "error")
+#' logger <- new_logger(log_level = "error")
 #' logger$unknown("Will print? %s", "yes")
 #' logger$fatal("Will print? %s", "yes")
 #' logger$error("Will print? %s", "yes")
@@ -35,7 +35,7 @@
 #' logger$trace("Will print? %s", "no")
 #'
 #' # log_level = "info" prints most of the messages
-#' logger <- make_logger(log_level = "info")
+#' logger <- new_logger(log_level = "info")
 #' logger$unknown("Will print? %s", "yes")
 #' logger$fatal("Will print? %s", "yes")
 #' logger$error("Will print? %s", "yes")
@@ -45,7 +45,7 @@
 #' logger$trace("Will print? %s", "no")
 #'
 #' # log_level = "trace" prints all messages
-#' logger <- make_logger(log_level = "trace")
+#' logger <- new_logger(log_level = "trace")
 #' logger$unknown("Will print? %s", "yes")
 #' logger$fatal("Will print? %s", "yes")
 #' logger$error("Will print? %s", "yes")
@@ -85,7 +85,7 @@
 #'
 #' @export
 #'
-make_logger <- function(log_level = "info", log_file = NULL) {
+new_logger <- function(log_level = "info", log_file = NULL) {
   valid_levels <- c(
     "unknown",
     "fatal",

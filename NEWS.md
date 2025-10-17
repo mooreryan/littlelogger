@@ -9,10 +9,11 @@
 
 ### Changed
 
-- Change default log level from `debug` to `info`
-- Log levels are now specified using names rather than verbosity levels
-- The class name of the returned logger list is now `littlelogger` rather than `logger`
+- The `make_logger` function is now `new_logger`
 - The `warn` function is now `warning`
+- The default log level is changed from `debug` to `info`
+- The class name of the returned logger list is now `littlelogger` rather than `logger`
+- Log levels are now specified using names rather than verbosity levels
 
 ### Removed
 
