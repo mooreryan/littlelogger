@@ -1,6 +1,6 @@
 # littlelogger
 
-[![R-CMD-check](https://github.com/mooreryan/littlelogger/workflows/R-CMD-check/badge.svg)](https://github.com/mooreryan/littlelogger/actions) [![codecov](https://codecov.io/gh/mooreryan/littlelogger/branch/main/graph/badge.svg?token=RSGYTC86IK)](https://codecov.io/gh/mooreryan/littlelogger)
+[![R-CMD-check](https://github.com/mooreryan/littlelogger/workflows/R-CMD-check/badge.svg)](https://github.com/mooreryan/littlelogger/actions)
 
 A little logging library for R scripts.
 
